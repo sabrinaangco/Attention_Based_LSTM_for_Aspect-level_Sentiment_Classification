@@ -19,7 +19,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, random_split, ConcatDataset
 
 from data_utils import build_tokenizer, build_embedding_matrix, ABSADataset
-from models import LSTM, TD_LSTM, TC_LSTM
+from models import LSTM, TD_LSTM, TC_LSTM, ATAE_LSTM
 
 
 logger = logging.getLogger()
@@ -202,6 +202,8 @@ def main():
         'lstm': LSTM,
         'td_lstm': TD_LSTM,
         'tc_lstm': TC_LSTM,
+        'atae_lstm': ATAE_LSTM,
+
     }
     dataset_files = {
         'twitter': {
@@ -220,7 +222,9 @@ def main():
     input_colses = {
         'lstm': ['text_indices'],
         'td_lstm': ['left_with_aspect_indices', 'right_with_aspect_indices'],
-        'tc_lstm': ['left_with_aspect_indices', 'right_with_aspect_indices', 'aspect_indices']
+        'tc_lstm': ['left_with_aspect_indices', 'right_with_aspect_indices', 'aspect_indices'],
+        'atae_lstm': ['text_indices', 'aspect_indices'],
+
        
     }
     initializers = {
