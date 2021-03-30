@@ -19,10 +19,10 @@ python -m spacy download en_core_web_sm
 %run train_k_fold_cross_val.py --model_name lstm --dataset restaurant  
 
 ## Arguments for training
-('--model_name', default='lstm', type=str, help='lstm, td_lstm, tc_lstm)  
+('--model_name', default='lstm', type=str, help='lstm, td_lstm, tc_lstm')  
 ('--dataset', default='laptop', type=str, help='twitter, restaurant, laptop')  
 ('--optimizer', default='adam', type=str, help= 'adadelta, adagrad, adam, adamax, Adamax, asgd, rmsprop, sgd')  
-('--initializer', default='xavier_uniform_', type=str, help='xavier_uniform_, xavier_normal_, orthogonal_)  
+('--initializer', default='xavier_uniform_', type=str, help='xavier_uniform_, xavier_normal_, orthogonal_')  
 ('--lr', default=2e-5, type=float, help='try 1e-3')  
 ('--dropout', default=0.1, type=float)  
 ('--l2reg', default=0.01, type=float)  
