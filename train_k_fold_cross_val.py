@@ -167,10 +167,10 @@ class Instructor:
 def main():
     # Hyper Parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', default='lstm', type=str)
+    parser.add_argument('--model_name', default='lstm', type=str, help='lstm, td_lstm, tc_lstm')
     parser.add_argument('--dataset', default='twitter', type=str, help='twitter, restaurant, laptop')
-    parser.add_argument('--optimizer', default='adam', type=str)
-    parser.add_argument('--initializer', default='xavier_uniform_', type=str)
+    parser.add_argument('--optimizer', default='adam', type=str, help= 'adadelta, adagrad, adam, adamax, Adamax, asgd, rmsprop, sgd')
+    parser.add_argument('--initializer', default='xavier_uniform_', type=str, help='xavier_uniform_, xavier_normal_, orthogonal_')
     parser.add_argument('--learning_rate', default=2e-5, type=float, help='try 1e-3')
     parser.add_argument('--dropout', default=0.1, type=float)
     parser.add_argument('--l2reg', default=0.01, type=float)
