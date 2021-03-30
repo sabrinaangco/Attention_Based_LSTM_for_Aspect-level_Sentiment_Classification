@@ -6,7 +6,7 @@ https://www.kaggle.com/yutanakamura/glove42b300dtxt
 
 ## Required Libraries
 numpy==1.20.1
-transformers==3.5.1
+transformers==3.5.1 \n
 pytorch==1.7.1
 sklearn
 spacy
