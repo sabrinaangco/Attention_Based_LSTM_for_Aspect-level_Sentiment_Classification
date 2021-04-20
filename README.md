@@ -1,4 +1,4 @@
-# NLP_project
+# Attention Based LSTM for Aspect-level Sentiment Classificaion
 
 ## Files to download
 Download glove.42B.300d.txt and add it to main folder in order to run code, can be downloaded here:  
