@@ -1,6 +1,6 @@
 
 
-from layers.dynamic_rnn import DynamicLSTM
+from src.layers.dynamic_rnn import DynamicLSTM
 import torch
 import torch.nn as nn
 

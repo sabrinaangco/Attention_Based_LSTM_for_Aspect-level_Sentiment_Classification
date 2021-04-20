@@ -17,8 +17,9 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
 
-from utils.data_utils import build_tokenizer, build_embedding_matrix, ABSADataset
-from models import LSTM, TD_LSTM, TC_LSTM, ATAE_LSTM
+from src.utils.data_utils import build_tokenizer, build_embedding_matrix, ABSADataset
+from src.models import LSTM, TD_LSTM, TC_LSTM, ATAE_LSTM
+# from src.models import lstm, td_lstm, lc_lstm, atae_lstm
 
 
 logger = logging.getLogger()
@@ -33,11 +34,11 @@ class Instructor:
         tokenizer = build_tokenizer(
             fnames=[opt.dataset_file['train'], opt.dataset_file['test']],
             max_seq_len=opt.max_seq_len,
-            dat_fname='output/train/{0}_tokenizer.dat'.format(opt.dataset))
+            dat_fname='src/output/train/{0}_tokenizer.dat'.format(opt.dataset))
         embedding_matrix = build_embedding_matrix(
             word2idx=tokenizer.word2idx,
             embed_dim=opt.embed_dim,
-            dat_fname='output/train/{0}_{1}_embedding_matrix.dat'.format(str(opt.embed_dim), opt.dataset))
+            dat_fname='src/output/train/{0}_{1}_embedding_matrix.dat'.format(str(opt.embed_dim), opt.dataset))
         self.model = opt.model_class(embedding_matrix, opt).to(opt.device)
 
         self.trainset = ABSADataset(opt.dataset_file['train'], tokenizer)
@@ -75,7 +76,8 @@ class Instructor:
         global_step = 0
         path = None
         for i_epoch in range(self.opt.num_epoch):
-            logger.info('>' * 100)
+            print('>' * 100)
+#             logger.info('>' * 100)
             logger.info('epoch: {}'.format(i_epoch))
             n_correct, n_total, loss_total = 0, 0, 0
             # switch model to training mode
@@ -106,9 +108,9 @@ class Instructor:
             if val_acc > max_val_acc:
                 max_val_acc = val_acc
                 max_val_epoch = i_epoch
-                if not os.path.exists('output/train/state_dict'):
-                    os.mkdir('output/train/state_dict')
-                path = 'output/train/state_dict/{0}_{1}_val_acc_{2}_e{3}'.format(self.opt.model_name, self.opt.dataset, round(val_acc, 4), i_epoch)
+                if not os.path.exists('src/output/train/state_dict'):
+                    os.mkdir('src/output/train/state_dict')
+                path = 'src/output/train/state_dict/{0}_{1}_val_acc_{2}_e{3}'.format(self.opt.model_name, self.opt.dataset, round(val_acc, 4), i_epoch)
                 torch.save(self.model.state_dict(), path)
                 logger.info('>> saved: {}'.format(path))
             if val_f1 > max_val_f1:
@@ -206,12 +208,12 @@ def main():
     }
     dataset_files = {
         'restaurant': {
-            'train': '../datasets/semeval14/Restaurants_Train.xml.seg',
-            'test': '../datasets/semeval14/Restaurants_Test_Gold.xml.seg'
+            'train': 'datasets/semeval14/Restaurants_Train.xml.seg',
+            'test': 'datasets/semeval14/Restaurants_Test_Gold.xml.seg'
         },
         'laptop': {
-            'train': '../datasets/semeval14/Laptops_Train.xml.seg',
-            'test': '../datasets/semeval14/Laptops_Test_Gold.xml.seg'
+            'train': '../src/datasets/semeval14/Laptops_Train.xml.seg',
+            'test': '../src/datasets/semeval14/Laptops_Test_Gold.xml.seg'
         }
     }
     input_colses = {
@@ -241,7 +243,7 @@ def main():
     opt.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') \
         if opt.device is None else torch.device(opt.device)
 
-    log_file = 'output/train/{}-{}-{}.log'.format(opt.model_name, opt.dataset, strftime("%y%m%d-%H%M", localtime()))
+    log_file = 'src/output/train/{}-{}-{}.log'.format(opt.model_name, opt.dataset, strftime("%y%m%d-%H%M", localtime()))
     logger.addHandler(logging.FileHandler(log_file))
 
     ins = Instructor(opt)

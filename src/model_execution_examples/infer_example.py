@@ -2,10 +2,10 @@ import torch
 import torch.nn.functional as F
 import argparse
 import numpy as np
-from utils.data_utils import build_tokenizer, build_embedding_matrix, pad_and_truncate
-from models import LSTM, TD_LSTM, TC_LSTM, ATAE_LSTM
+from src.utils.data_utils import build_tokenizer, build_embedding_matrix, pad_and_truncate
+from src.models import LSTM, TD_LSTM, TC_LSTM, ATAE_LSTM
 
-from dependency_graph import dependency_adj_matrix
+from src.model_execution_examples.dependency_graph import dependency_adj_matrix
 
 
 class Inferer:
@@ -71,7 +71,7 @@ class Inferer:
 
         return t_probs
 
-def run_infer_example(example_sentence = 'the service was bad', aspect = 'service', n_model = 'atae_lstm', n_dataset = 'restaurant', model_file = 'atae_lstm_restaurant_val_acc_0.7411_e8'):
+def run_infer_example(example_sentence = 'the service was bad', aspect = 'service', n_model = 'atae_lstm', n_dataset = 'restaurant', model_file = 'atae_lstm_restaurant_val_acc_0.7889'):
 
 # if __name__ == '__main__':
     model_classes = {
@@ -82,10 +82,7 @@ def run_infer_example(example_sentence = 'the service was bad', aspect = 'servic
 
     }
     dataset_files = {
-        'twitter': {
-            'train': './datasets/acl-14-short-data/train.raw',
-            'test': './datasets/acl-14-short-data/test.raw'
-        },
+ 
         'restaurant': {
             'train': './datasets/semeval14/Restaurants_Train.xml.seg',
             'test': './datasets/semeval14/Restaurants_Test_Gold.xml.seg'
@@ -110,7 +107,7 @@ def run_infer_example(example_sentence = 'the service was bad', aspect = 'servic
     opt.dataset_file = dataset_files[opt.dataset]
     opt.inputs_cols = input_colses[opt.model_name]
     # set your trained models here
-    opt.state_dict_path = 'output/train/state_dict/'+ model_file
+    opt.state_dict_path = 'src/output/train_k_fold_cross_val/state_dict/'+ model_file
     opt.embed_dim = 300
     opt.hidden_dim = 300
     opt.max_seq_len = 85

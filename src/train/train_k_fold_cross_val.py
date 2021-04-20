@@ -14,12 +14,13 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, random_split, ConcatDataset
 
-from utils.data_utils import build_tokenizer, build_embedding_matrix, ABSADataset
-from models import LSTM, TD_LSTM, TC_LSTM, ATAE_LSTM
+from src.utils.data_utils import build_tokenizer, build_embedding_matrix, ABSADataset
+from src.models import LSTM, TD_LSTM, TC_LSTM, ATAE_LSTM
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler(sys.stdout))
+
 
 
 class Instructor:
@@ -29,11 +30,11 @@ class Instructor:
         tokenizer = build_tokenizer(
             fnames=[opt.dataset_file['train'], opt.dataset_file['test']],
             max_seq_len=opt.max_seq_len,
-            dat_fname='output/train_k_fold_cross_val/{0}_tokenizer.dat'.format(opt.dataset))
+            dat_fname='src/output/train_k_fold_cross_val/{0}_tokenizer.dat'.format(opt.dataset))
         embedding_matrix = build_embedding_matrix(
             word2idx=tokenizer.word2idx,
             embed_dim=opt.embed_dim,
-            dat_fname='output/train_k_fold_cross_val/{0}_{1}_embedding_matrix.dat'.format(str(opt.embed_dim), opt.dataset))
+            dat_fname='src/output/train_k_fold_cross_val/{0}_{1}_embedding_matrix.dat'.format(str(opt.embed_dim), opt.dataset))
         self.model = opt.model_class(embedding_matrix, opt).to(opt.device)
 
         self.trainset = ABSADataset(opt.dataset_file['train'], tokenizer)
@@ -41,20 +42,20 @@ class Instructor:
 
         if opt.device.type == 'cuda':
             logger.info('cuda memory allocated: {}'.format(torch.cuda.memory_allocated(device=opt.device.index)))
-        self._print_args()
+#         self._print_args()
 
-    def _print_args(self):
-        n_trainable_params, n_nontrainable_params = 0, 0
-        for p in self.model.parameters():
-            n_params = torch.prod(torch.tensor(p.shape))
-            if p.requires_grad:
-                n_trainable_params += n_params
-            else:
-                n_nontrainable_params += n_params
-        logger.info('> n_trainable_params: {0}, n_nontrainable_params: {1}'.format(n_trainable_params, n_nontrainable_params))
-        logger.info('> training arguments:')
-        for arg in vars(self.opt):
-            logger.info('>>> {0}: {1}'.format(arg, getattr(self.opt, arg)))
+#     def _print_args(self):
+#         n_trainable_params, n_nontrainable_params = 0, 0
+#         for p in self.model.parameters():
+#             n_params = torch.prod(torch.tensor(p.shape))
+#             if p.requires_grad:
+#                 n_trainable_params += n_params
+#             else:
+#                 n_nontrainable_params += n_params
+#         logger.info('> n_trainable_params: {0}, n_nontrainable_params: {1}'.format(n_trainable_params, n_nontrainable_params))
+#         logger.info('> training arguments:')
+#         for arg in vars(self.opt):
+#             logger.info('>>> {0}: {1}'.format(arg, getattr(self.opt, arg)))
 
 
     def _train(self, criterion, optimizer, train_data_loader, val_data_loader):
@@ -64,8 +65,11 @@ class Instructor:
         global_step = 0
         path = None
         for i_epoch in range(self.opt.num_epoch):
-            logger.info('>' * 100)
-            logger.info('epoch: {}'.format(i_epoch))
+#             logger.info('>' * 100)
+#             logger.info('epoch: {}'.format(i_epoch))
+            if i_epoch%10==0:
+                print('>' * 10)
+                print('epoch: {}'.format(i_epoch))
             n_correct, n_total, loss_total = 0, 0, 0
             # switch model to training mode
             self.model.train()
@@ -88,22 +92,26 @@ class Instructor:
                 if global_step % self.opt.log_step == 0:
                     train_acc = n_correct / n_total
                     train_loss = loss_total / n_total
-                    logger.info('loss: {:.4f}, acc: {:.4f}'.format(train_loss, train_acc))
+#                     logger.info('loss: {:.4f}, acc: {:.4f}'.format(train_loss, train_acc))
 
             val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
-            logger.info('> val_acc: {:.4f}, val_f1: {:.4f}'.format(val_acc, val_f1))
+    
+#             logger.info('> val_acc: {:.4f}, val_f1: {:.4f}'.format(val_acc, val_f1))
+            if i_epoch%5==0:
+                print('> val_acc: {:.4f}, val_f1: {:.4f}'.format(val_acc, val_f1))
+                    
             if val_acc > max_val_acc:
                 max_val_acc = val_acc
                 max_val_epoch = i_epoch
-                if not os.path.exists('output/train_k_fold_cross_val/state_dict'):
-                    os.mkdir('output/train_k_fold_cross_val/state_dict')
-                path = 'output/train_k_fold_cross_val/state_dict/{0}_{1}_val_acc_{2}'.format(self.opt.model_name, self.opt.dataset, round(val_acc, 4))
+                if not os.path.exists('src/output/train_k_fold_cross_val/state_dict'):
+                    os.mkdir('src/output/train_k_fold_cross_val/state_dict')
+                path = 'src/output/train_k_fold_cross_val/state_dict/{0}_{1}_val_acc_{2}'.format(self.opt.model_name, self.opt.dataset, round(val_acc, 4))
                 torch.save(self.model.state_dict(), path)
-                logger.info('>> saved: {}'.format(path))
+#                 logger.info('>> saved: {}'.format(path))
             if val_f1 > max_val_f1:
                 max_val_f1 = val_f1
             if i_epoch - max_val_epoch >= self.opt.patience:
-                print('>> early stop.')
+                print('>> early stop, epoch:', i_epoch)
                 break
 
         return path
@@ -145,8 +153,10 @@ class Instructor:
 
         all_test_acc, all_test_f1 = [], []
         for fid in range(self.opt.cross_val_fold):
-            logger.info('fold : {}'.format(fid))
-            logger.info('>' * 100)
+#             logger.info('fold : {}'.format(fid))
+            print('fold : {}'.format(fid))
+#             logger.info('>' * 100)
+            print('>' * 10)
             trainset = ConcatDataset([x for i, x in enumerate(splittedsets) if i != fid])
             valset = splittedsets[fid]
             train_data_loader = DataLoader(dataset=trainset, batch_size=self.opt.batch_size, shuffle=True)
@@ -157,11 +167,13 @@ class Instructor:
             test_acc, test_f1 = self._evaluate_acc_f1(test_data_loader)
             all_test_acc.append(test_acc)
             all_test_f1.append(test_f1)
-            logger.info('>> test_acc: {:.4f}, test_f1: {:.4f}'.format(test_acc, test_f1))
+#             logger.info('>> test_acc: {:.4f}, test_f1: {:.4f}'.format(test_acc, test_f1))
+            print('>> test_acc: {:.4f}, test_f1: {:.4f}'.format(test_acc, test_f1))
 
         mean_test_acc, mean_test_f1 = numpy.mean(all_test_acc), numpy.mean(all_test_f1)
-        logger.info('>' * 100)
-        logger.info('>>> mean_test_acc: {:.4f}, mean_test_f1: {:.4f}'.format(mean_test_acc, mean_test_f1))
+#         logger.info('>' * 100)
+
+#         logger.info('>>> mean_test_acc: {:.4f}, mean_test_f1: {:.4f}'.format(mean_test_acc, mean_test_f1))
 
 def main():
     # Hyper Parameters
@@ -207,12 +219,12 @@ def main():
     dataset_files = {
 
         'restaurant': {
-            'train': '../datasets/semeval14/Restaurants_Train.xml.seg',
-            'test': '../datasets/semeval14/Restaurants_Test_Gold.xml.seg'
+            'train': 'datasets/semeval14/Restaurants_Train.xml.seg',
+            'test': 'datasets/semeval14/Restaurants_Test_Gold.xml.seg'
         },
         'laptop': {
-            'train': '../datasets/semeval14/Laptops_Train.xml.seg',
-            'test': '../datasets/semeval14/Laptops_Test_Gold.xml.seg'
+            'train': 'datasets/semeval14/Laptops_Train.xml.seg',
+            'test': 'datasets/semeval14/Laptops_Test_Gold.xml.seg'
         }
     }
     input_colses = {
@@ -243,7 +255,7 @@ def main():
     opt.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') \
         if opt.device is None else torch.device(opt.device)
 
-    log_file = 'output/train_k_fold_cross_val/{}-{}-{}.log'.format(opt.model_name, opt.dataset, strftime("%y%m%d-%H%M", localtime()))
+    log_file = 'src/output/train_k_fold_cross_val/{}-{}-{}.log'.format(opt.model_name, opt.dataset, strftime("%y%m%d-%H%M", localtime()))
     logger.addHandler(logging.FileHandler(log_file))
 
     ins = Instructor(opt)

@@ -1,10 +1,10 @@
 
-from layers.attention import Attention, NoQueryAttention
-from layers.dynamic_rnn import DynamicLSTM
+from src.layers.attention import Attention, NoQueryAttention
+from src.layers.dynamic_rnn import DynamicLSTM
 import torch
 import torch.nn as nn
 
-from layers.squeeze_embedding import SqueezeEmbedding
+from src.layers.squeeze_embedding import SqueezeEmbedding
 
 
 class ATAE_LSTM(nn.Module):

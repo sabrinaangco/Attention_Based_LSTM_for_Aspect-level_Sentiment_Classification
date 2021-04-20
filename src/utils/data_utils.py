@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
-# file: data_utils.py
-# author: songyouwei <youwei0314@gmail.com>
-# Copyright (C) 2018. All Rights Reserved.
 
 import os
 import pickle
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from transformers import BertTokenizer
 
 
 def build_tokenizer(fnames, max_seq_len, dat_fname):
@@ -109,20 +104,6 @@ class Tokenizer(object):
         return pad_and_truncate(sequence, self.max_seq_len, padding=padding, truncating=truncating)
 
 
-class Tokenizer4Bert:
-    def __init__(self, max_seq_len, pretrained_bert_name):
-        self.tokenizer = BertTokenizer.from_pretrained(pretrained_bert_name)
-        self.max_seq_len = max_seq_len
-
-    def text_to_sequence(self, text, reverse=False, padding='post', truncating='post'):
-        sequence = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))
-        if len(sequence) == 0:
-            sequence = [0]
-        if reverse:
-            sequence = sequence[::-1]
-        return pad_and_truncate(sequence, self.max_seq_len, padding=padding, truncating=truncating)
-
-
 class ABSADataset(Dataset):
     def __init__(self, fname, tokenizer):
         fin = open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
@@ -151,21 +132,16 @@ class ABSADataset(Dataset):
             polarity = int(polarity) + 1
 
             text_len = np.sum(text_indices != 0)
-            concat_bert_indices = tokenizer.text_to_sequence('[CLS] ' + text_left + " " + aspect + " " + text_right + ' [SEP] ' + aspect + " [SEP]")
+
             concat_segments_indices = [0] * (text_len + 2) + [1] * (aspect_len + 1)
             concat_segments_indices = pad_and_truncate(concat_segments_indices, tokenizer.max_seq_len)
 
-            text_bert_indices = tokenizer.text_to_sequence("[CLS] " + text_left + " " + aspect + " " + text_right + " [SEP]")
-            aspect_bert_indices = tokenizer.text_to_sequence("[CLS] " + aspect + " [SEP]")
-
+            
             dependency_graph = np.pad(idx2graph[i], \
                 ((0,tokenizer.max_seq_len-idx2graph[i].shape[0]),(0,tokenizer.max_seq_len-idx2graph[i].shape[0])), 'constant')
 
             data = {
-                'concat_bert_indices': concat_bert_indices,
                 'concat_segments_indices': concat_segments_indices,
-                'text_bert_indices': text_bert_indices,
-                'aspect_bert_indices': aspect_bert_indices,
                 'text_indices': text_indices,
                 'context_indices': context_indices,
                 'left_indices': left_indices,
