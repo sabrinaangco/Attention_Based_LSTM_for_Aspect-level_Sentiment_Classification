@@ -12,7 +12,11 @@ https://www.kaggle.com/yutanakamura/glove42b300dtxt
 Either install the following libraries (with coresponding versions) manually or download and install the requirements.txt file
 
 numpy==1.20.1
+
 pytorch==1.7.1
+
 sklearn
+
 spacy
+
 from spacy download en_core_web_sm (python -m spacy download en_core_web_sm )
